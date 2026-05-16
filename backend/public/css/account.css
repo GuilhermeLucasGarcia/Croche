@@ -1,0 +1,412 @@
+.accountPage {
+  padding: 28px 0 60px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #807d7e;
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
+.alert {
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.alert--success {
+  background: rgba(28, 184, 65, 0.12);
+  color: #23653a;
+}
+
+.alert--error {
+  background: rgba(220, 53, 69, 0.12);
+  color: #8b2331;
+}
+
+.accountLayout {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 34px;
+  align-items: start;
+}
+
+.accountSidebar {
+  position: sticky;
+  top: 92px;
+}
+
+.accountSidebar__intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.accountSidebar__bar,
+.sectionTitle__bar {
+  width: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.accountSidebar__bar {
+  height: 34px;
+  margin-top: 4px;
+}
+
+.accountSidebar__intro h1 {
+  margin: 0;
+  font-size: 34px;
+  color: #3c4242;
+}
+
+.accountSidebar__intro p {
+  margin: 8px 0 0;
+  color: #807d7e;
+  line-height: 1.6;
+}
+
+.accountMenu {
+  display: grid;
+  gap: 8px;
+}
+
+.accountMenu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-left: 3px solid transparent;
+  border-radius: 0 10px 10px 0;
+  color: #807d7e;
+  font-weight: 600;
+}
+
+.accountMenu__item.is-active {
+  background: #f6f6f6;
+  border-left-color: #3c4242;
+  color: #3c4242;
+}
+
+.supportCard {
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.supportCard__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #3c4242;
+}
+
+.supportCard p {
+  margin: 10px 0 12px;
+  color: #807d7e;
+  line-height: 1.6;
+}
+
+.supportCard a,
+.supportLink {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.sectionTitle h2 {
+  margin: 0;
+  font-size: 36px;
+  color: #3c4242;
+}
+
+.sectionTitle__bar {
+  height: 30px;
+}
+
+.accountGrid {
+  display: grid;
+  gap: 22px;
+}
+
+.card {
+  padding: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.03);
+}
+
+.card__header h3 {
+  margin: 0;
+  font-size: 24px;
+  color: #3c4242;
+}
+
+.card__header p {
+  margin: 10px 0 0;
+  color: #807d7e;
+  line-height: 1.7;
+}
+
+.profileHero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #f8f8fb;
+}
+
+.profileAvatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.profileAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileMeta__name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #3c4242;
+}
+
+.profileMeta__email,
+.profileMeta__date {
+  margin-top: 6px;
+  color: #807d7e;
+}
+
+.accountForm {
+  margin-top: 24px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field--full {
+  grid-column: 1 / -1;
+}
+
+.field span,
+.checkboxField span {
+  color: #3c4242;
+  font-weight: 600;
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid rgba(60, 66, 66, 0.18);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font: inherit;
+  color: #3c4242;
+  background: #fff;
+}
+
+.field input:focus {
+  outline: 0;
+  border-color: rgba(138, 51, 253, 0.55);
+  box-shadow: 0 0 0 4px rgba(138, 51, 253, 0.08);
+}
+
+.field__error {
+  color: #b42318;
+  font-size: 13px;
+}
+
+.btnPrimary,
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+  min-width: 210px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  border: 0;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnPrimary {
+  background: var(--accent);
+}
+
+.btnDanger {
+  background: #c0392b;
+}
+
+.accountForm.is-submitting .btnPrimary,
+.accountForm.is-submitting .btnDanger {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.timeline {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.timeline__item {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #f8f8fb;
+}
+
+.timeline__stamp {
+  display: grid;
+  gap: 4px;
+  color: #807d7e;
+  font-size: 13px;
+}
+
+.timeline__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #3c4242;
+}
+
+.timeline__text {
+  margin-top: 6px;
+  color: #807d7e;
+  line-height: 1.7;
+}
+
+.toggleList {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.toggleCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #f8f8fb;
+}
+
+.toggleCard strong {
+  display: block;
+  color: #3c4242;
+}
+
+.toggleCard span {
+  display: block;
+  margin-top: 4px;
+  color: #807d7e;
+  line-height: 1.6;
+}
+
+.toggleCard input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+
+.dangerSteps {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkboxField input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.dangerActions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1100px) {
+  .accountLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .accountSidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .sectionTitle h2,
+  .accountSidebar__intro h1 {
+    font-size: 28px;
+  }
+
+  .card {
+    padding: 22px 18px;
+  }
+
+  .formGrid,
+  .timeline__item {
+    grid-template-columns: 1fr;
+  }
+
+  .profileHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .toggleCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .btnPrimary,
+  .btnDanger {
+    width: 100%;
+  }
+}
