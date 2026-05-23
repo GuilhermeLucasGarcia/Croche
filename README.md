@@ -92,3 +92,16 @@ Se o `artisan serve` não conseguir subir (falha ao escutar na porta), use o ser
 ```powershell
 php -c .\php.ini -S 127.0.0.1:8000 -t backend\public backend\server.php
 ```
+
+### Deploy com Docker no Render
+
+O repositório já inclui os arquivos necessários para deploy Docker no Render:
+
+- [Dockerfile](file:///h:/Users/Gui/Desktop/Croche/Dockerfile)
+- [.dockerignore](file:///h:/Users/Gui/Desktop/Croche/.dockerignore)
+- [render.yaml](file:///h:/Users/Gui/Desktop/Croche/render.yaml)
+- [start-container.sh](file:///h:/Users/Gui/Desktop/Croche/docker/start-container.sh)
+
+Guia completo:
+
+- [deploy-render.md](file:///h:/Users/Gui/Desktop/Croche/docs/deploy-render.md)
