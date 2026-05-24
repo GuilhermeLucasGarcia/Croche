@@ -19,11 +19,9 @@
           <span class="brand__name">Philos Croche</span>
         </a>
         <nav class="nav" aria-label="Categorias">
-          <a class="nav__link" href="#">Amigurumi</a>
-          <a class="nav__link" href="#">Maternidade</a>
-          <a class="nav__link" href="#">Acessórios</a>
-          <a class="nav__link" href="#">Decoração</a>
-          <a class="nav__link" href="#">Outros</a>
+          @foreach($categories->take(5) as $category)
+            <a class="nav__link" href="{{ route('products.index', ['category' => $category->NOME]) }}">{{ $category->NOME }}</a>
+          @endforeach
         </nav>
         <div class="actions">
           <label class="search" aria-label="Buscar">
@@ -31,9 +29,9 @@
             <input class="search__input" type="search" placeholder="O que você procura hoje?" />
           </label>
           <div class="iconbar" aria-label="Ações">
-            <a class="iconbtn" href="#" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="#" aria-label="Conta">👤</a>
-            <a class="iconbtn" href="#" aria-label="Carrinho">🛒</a>
+            <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
+            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
+            <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
           </div>
         </div>
       </div>
@@ -42,6 +40,46 @@
 
     <main>
       <section class="hero" aria-label="Banner principal">
+        @if($slides->count() > 0)
+          @foreach($slides as $index => $slide)
+          <style>
+            .hero__bg--{{ $slide->id }} {
+              background-image: url('{{ $slide->IMG_DESKTOP_URL }}');
+            }
+            @media (max-width: 768px) {
+              .hero__bg--{{ $slide->id }} {
+                background-image: url('{{ $slide->IMG_MOBILE_URL }}');
+              }
+            }
+          </style>
+          <div class="hero__bg hero__bg--{{ $slide->id }}" style="background-size: cover; background-position: center; {{ $index === 0 ? '' : 'display: none;' }}" data-slide="{{ $index }}">
+            <div class="hero__fade"></div>
+            <div class="container hero__content">
+              <div class="heroCard">
+                <h1 class="heroCard__title">{!! nl2br(e($slide->TITULO)) !!}</h1>
+                @if($slide->DESCRICAO)
+                <p class="heroCard__subtitle">
+                  {!! nl2br(e($slide->DESCRICAO)) !!}
+                </p>
+                @endif
+                <a class="btn btn--primary" href="{{ $slide->LINK_DESTINO }}">Comprar agora</a>
+              </div>
+            </div>
+            
+            @if($slides->count() > 1)
+            <div class="hero__controls" aria-hidden="true">
+              <button class="hero__control hero__control--left" type="button" onclick="changeSlide(-1)">‹</button>
+              <button class="hero__control hero__control--right" type="button" onclick="changeSlide(1)">›</button>
+            </div>
+            <div class="hero__dots" aria-hidden="true">
+              @foreach($slides as $dotIndex => $s)
+              <span class="dot {{ $dotIndex === 0 ? 'dot--active' : '' }}" onclick="goToSlide({{ $dotIndex }})"></span>
+              @endforeach
+            </div>
+            @endif
+          </div>
+          @endforeach
+        @else
         <div class="hero__bg">
           <div class="hero__fade"></div>
           <div class="container hero__content">
@@ -52,19 +90,11 @@
                 Personalizável<br />
                 Fio macio e antialérgico
               </p>
-              <a class="btn btn--primary" href="#">Comprar agora</a>
+              <a class="btn btn--primary" href="{{ route('products.index') }}">Comprar agora</a>
             </div>
           </div>
-          <div class="hero__controls" aria-hidden="true">
-            <button class="hero__control hero__control--left" type="button">‹</button>
-            <button class="hero__control hero__control--right" type="button">›</button>
-          </div>
-          <div class="hero__dots" aria-hidden="true">
-            <span class="dot dot--active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-          </div>
         </div>
+        @endif
       </section>
 
       <section class="section container" aria-label="Novidades">
@@ -75,22 +105,12 @@
         <div class="carousel">
           <button class="carousel__arrow" type="button" aria-label="Anterior">‹</button>
           <div class="carousel__track">
-            <a class="catCard" href="#">
-              <div class="catCard__img catCard__img--hygiene" aria-hidden="true"></div>
-              <div class="catCard__label">Kit higiene</div>
+            @foreach($categories as $category)
+            <a class="catCard" href="{{ route('products.index', ['category' => $category->NOME]) }}">
+              <div class="catCard__img" @if($category->IMG_URL) style="background-image: url('{{ $category->IMG_URL }}'); background-size: cover; background-position: center;" @endif aria-hidden="true"></div>
+              <div class="catCard__label">{{ $category->NOME }}</div>
             </a>
-            <a class="catCard" href="#">
-              <div class="catCard__img catCard__img--curtain" aria-hidden="true"></div>
-              <div class="catCard__label">Prendedor de cortina</div>
-            </a>
-            <a class="catCard" href="#">
-              <div class="catCard__img catCard__img--notebook" aria-hidden="true"></div>
-              <div class="catCard__label">Capa para notebook</div>
-            </a>
-            <a class="catCard" href="#">
-              <div class="catCard__img catCard__img--wine" aria-hidden="true"></div>
-              <div class="catCard__label">Kit vinho</div>
-            </a>
+            @endforeach
           </div>
           <button class="carousel__arrow" type="button" aria-label="Próximo">›</button>
         </div>
@@ -121,50 +141,19 @@
           <h2 class="sectionHeader__title">Em destaque</h2>
         </div>
         <div class="productGrid">
-          <a class="productCard" href="#">
+          @foreach($featuredProducts as $product)
+          <a class="productCard" href="{{ route('products.show', $product->id) }}">
             <button class="wishlist" type="button" aria-label="Favoritar">♡</button>
-            <div class="productCard__img productCard__img--reindeer" aria-hidden="true"></div>
+            <div class="productCard__img" @if($product->IMG_URL) style="background-image: url('{{ $product->IMG_URL }}'); background-size: cover; background-position: center;" @endif aria-hidden="true"></div>
             <div class="productCard__body">
-              <div class="productCard__name">Rena</div>
+              <div class="productCard__name">{{ $product->CODIGO }}</div>
               <div class="productCard__meta">
-                <span class="productCard__cat">Amigurumi</span>
-                <span class="productCard__price">R$49,00</span>
+                <span class="productCard__cat">{{ $product->category->NOME ?? 'Sem categoria' }}</span>
+                <span class="productCard__price">R$ {{ number_format($product->VALOR, 2, ',', '.') }}</span>
               </div>
             </div>
           </a>
-          <a class="productCard" href="#">
-            <button class="wishlist" type="button" aria-label="Favoritar">♡</button>
-            <div class="productCard__img productCard__img--giraffe" aria-hidden="true"></div>
-            <div class="productCard__body">
-              <div class="productCard__name">Girafa</div>
-              <div class="productCard__meta">
-                <span class="productCard__cat">Prendedor de cortina</span>
-                <span class="productCard__price">R$54,00</span>
-              </div>
-            </div>
-          </a>
-          <a class="productCard" href="#">
-            <button class="wishlist" type="button" aria-label="Favoritar">♡</button>
-            <div class="productCard__img productCard__img--mouth" aria-hidden="true"></div>
-            <div class="productCard__body">
-              <div class="productCard__name">Porta acessório crochê</div>
-              <div class="productCard__meta">
-                <span class="productCard__cat">Acessórios</span>
-                <span class="productCard__price">R$55,00</span>
-              </div>
-            </div>
-          </a>
-          <a class="productCard" href="#">
-            <button class="wishlist" type="button" aria-label="Favoritar">♡</button>
-            <div class="productCard__img productCard__img--fox" aria-hidden="true"></div>
-            <div class="productCard__body">
-              <div class="productCard__name">Luci</div>
-              <div class="productCard__meta">
-                <span class="productCard__cat">Amigurumi</span>
-                <span class="productCard__price">R$51,00</span>
-              </div>
-            </div>
-          </a>
+          @endforeach
         </div>
       </section>
 
@@ -237,6 +226,40 @@
       </div>
       <div class="container footer__copy">Copyright © 2026 Philos Croche Ltd. Todos os direitos reservados.</div>
     </footer>
+    <script>
+      let currentSlide = 0;
+      const slides = document.querySelectorAll('.hero__bg[data-slide]');
+      const dots = document.querySelectorAll('.hero__dots .dot');
+
+      function showSlide(index) {
+        if (slides.length === 0) return;
+        
+        slides.forEach(slide => slide.style.display = 'none');
+        dots.forEach(dot => dot.classList.remove('dot--active'));
+
+        currentSlide = (index + slides.length) % slides.length;
+        
+        slides[currentSlide].style.display = 'block';
+        if (dots[currentSlide]) {
+          dots[currentSlide].classList.add('dot--active');
+        }
+      }
+
+      function changeSlide(direction) {
+        showSlide(currentSlide + direction);
+      }
+
+      function goToSlide(index) {
+        showSlide(index);
+      }
+
+      // Auto play
+      if (slides.length > 1) {
+        setInterval(() => {
+          changeSlide(1);
+        }, 5000);
+      }
+    </script>
   </body>
 </html>
 

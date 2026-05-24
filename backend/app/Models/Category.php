@@ -15,12 +15,23 @@ class Category extends Model
         'NOME',
         'DESCRICAO',
         'IMG_URL',
+        'CATEGORIA_PAI_ID',
         'ATIVO',
     ];
 
     protected $casts = [
         'ATIVO' => 'boolean',
     ];
+
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'CATEGORIA_PAI_ID');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'CATEGORIA_PAI_ID');
+    }
 
     public function products()
     {

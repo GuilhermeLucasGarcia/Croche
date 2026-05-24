@@ -23,6 +23,7 @@ class Pessoa extends Authenticatable
         'SENHA',
         'PERFIL',
         'EMAIL',
+        'ATIVO',
         'RESET_TOKEN_HASH',
         'RESET_TOKEN_EXPIRES',
         'SENHA_ANTERIOR_1',
@@ -41,6 +42,7 @@ class Pessoa extends Authenticatable
     protected $casts = [
         'DT_ALTERACAO' => 'datetime',
         'RESET_TOKEN_EXPIRES' => 'datetime',
+        'ATIVO' => 'boolean',
     ];
 
     public function getAuthPassword()

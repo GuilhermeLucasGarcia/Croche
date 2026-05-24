@@ -18,13 +18,17 @@ class Product extends Model
         'IMG_URL',
         'DESCRICAO',
         'VALOR',
+        'ESTOQUE',
         'CATEGORIA_ID',
         'MARCA_ID',
+        'ATIVO',
     ];
 
     protected $casts = [
         'DESTAQUE' => 'boolean',
         'VALOR' => 'float',
+        'ESTOQUE' => 'integer',
+        'ATIVO' => 'boolean',
     ];
 
     public function category()
