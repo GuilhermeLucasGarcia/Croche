@@ -28,12 +28,11 @@ class ProductSeeder extends Seeder
             
             if ($cat) {
                 Product::firstOrCreate([
-                    'slug' => Str::slug($p['name'])
+                    'CODIGO' => $p['name']
                 ], [
-                    'category_id' => $cat->id,
-                    'name' => $p['name'],
-                    'price_cents' => $p['price_cents'],
-                    'stock_qty' => 10,
+                    'CATEGORIA_ID' => $cat->id,
+                    'VALOR' => $p['price_cents'] / 100,
+                    'ESTOQUE' => 10,
                 ]);
             }
         }

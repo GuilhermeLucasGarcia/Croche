@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('PRODUTO', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->integer('price_cents');
-            $table->integer('stock_qty')->default(0);
-            $table->string('image_path')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+            $table->unsignedBigInteger('CATEGORIA_ID')->nullable();
+            $table->unsignedBigInteger('MARCA_ID')->nullable();
+            $table->string('CODIGO')->nullable();
+            $table->text('DETALHES')->nullable();
+            $table->boolean('DESTAQUE')->default(false);
+            $table->string('IMG_URL')->nullable();
+            $table->text('DESCRICAO')->nullable();
+            $table->decimal('VALOR', 10, 2)->default(0);
+            $table->integer('ESTOQUE')->default(0);
+            $table->boolean('ATIVO')->default(true);
+            $table->timestamp('DT_ALTERACAO')->nullable();
         });
     }
 
@@ -30,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('PRODUTO');
     }
 };

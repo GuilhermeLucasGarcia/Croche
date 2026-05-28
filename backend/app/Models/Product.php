@@ -16,6 +16,7 @@ class Product extends Model
         'DETALHES',
         'DESTAQUE',
         'IMG_URL',
+        'IMAGENS',
         'DESCRICAO',
         'VALOR',
         'ESTOQUE',
@@ -29,6 +30,7 @@ class Product extends Model
         'VALOR' => 'float',
         'ESTOQUE' => 'integer',
         'ATIVO' => 'boolean',
+        'IMAGENS' => 'array',
     ];
 
     public function category()

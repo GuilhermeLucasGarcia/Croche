@@ -27,11 +27,14 @@
           <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
         </nav>
         <div class="actions">
-          <label class="search" aria-label="Buscar">
-            <span class="search__icon" aria-hidden="true">⌕</span>
-            <input class="search__input" type="search" placeholder="O que você procura hoje?" />
-          </label>
+          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
+            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
+            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
+          </form>
           <div class="iconbar" aria-label="Ações">
+            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
+              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
+            @endif
             <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
             <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Minha conta">👤</a>
             <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
@@ -87,10 +90,19 @@
               <span>👤</span>
               <span>Minhas informações</span>
             </a>
-            <a class="accountMenu__item" href="#danger-zone">
+            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
+            <a class="accountMenu__item" href="{{ url('/admin/produtos') }}">
+              <span>⚙</span>
+              <span>Painel Admin</span>
+            </a>
+            @endif
+            <a class="accountMenu__item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
               <span>↪</span>
               <span>Sair / Encerrar</span>
             </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
           </nav>
 
           <div class="supportCard">

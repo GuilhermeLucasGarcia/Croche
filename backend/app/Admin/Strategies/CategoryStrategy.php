@@ -73,6 +73,12 @@ class CategoryStrategy extends AbstractAdminFormStrategy
                 'placeholder' => 'Descrição da categoria (opcional)',
             ],
             [
+                'name' => 'IMG_URL',
+                'label' => 'Imagem da Categoria',
+                'type' => 'image',
+                'required' => false,
+            ],
+            [
                 'name' => 'CATEGORIA_PAI_ID',
                 'label' => 'Categoria pai',
                 'type' => 'select',
@@ -111,6 +117,8 @@ class CategoryStrategy extends AbstractAdminFormStrategy
                 Rule::unique('CATEGORIA', 'NOME')->ignore($id),
             ],
             'DESCRICAO' => ['nullable', 'string', 'max:2000'],
+            'IMG_URL' => ['nullable', 'string', 'max:2000'],
+            'IMG_URL_UPLOAD' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'CATEGORIA_PAI_ID' => $parentRules,
             'ATIVO' => ['nullable', 'boolean'],
         ];
@@ -135,6 +143,8 @@ class CategoryStrategy extends AbstractAdminFormStrategy
         $data['ATIVO'] = $request->boolean('ATIVO');
         $data['CATEGORIA_PAI_ID'] = $request->filled('CATEGORIA_PAI_ID') ? (int) $request->input('CATEGORIA_PAI_ID') : null;
 
+        $this->handleImageUpload($request, $data);
+
         $model = new Category();
         $model->fill($data);
         $model->save();
@@ -147,9 +157,45 @@ class CategoryStrategy extends AbstractAdminFormStrategy
         $data['ATIVO'] = $request->boolean('ATIVO');
         $data['CATEGORIA_PAI_ID'] = $request->filled('CATEGORIA_PAI_ID') ? (int) $request->input('CATEGORIA_PAI_ID') : null;
 
+        $this->handleImageUpload($request, $data);
+
         $model->fill($data);
         $model->save();
 
         return $model;
+    }
+
+    protected function handleImageUpload(Request $request, array &$data)
+    {
+        // Se a imagem for removida e não enviada uma nova, isso virá nulo/vazio.
+        if (!$request->filled('IMG_URL')) {
+            $data['IMG_URL'] = null;
+        }
+
+        if ($request->hasFile('IMG_URL_UPLOAD')) {
+            $file = $request->file('IMG_URL_UPLOAD');
+            if ($file && $file->isValid()) {
+                $filename = uniqid() . '-' . time() . '.' . $file->getClientOriginalExtension();
+                
+                $supabaseUrl = env('SUPABASE_URL');
+                $supabaseKey = env('SUPABASE_SERVICE_ROLE_KEY');
+                
+                if ($supabaseUrl && $supabaseKey) {
+                    $bucket = 'produtos-imagens'; // Usando o mesmo bucket de imagens
+                    $url = "{$supabaseUrl}/storage/v1/object/{$bucket}/{$filename}";
+                    
+                    $response = \Illuminate\Support\Facades\Http::withoutVerifying()->withHeaders([
+                        'Authorization' => "Bearer {$supabaseKey}",
+                        'Content-Type' => $file->getMimeType(),
+                    ])->withBody(file_get_contents($file->getRealPath()), $file->getMimeType())
+                    ->post($url);
+                    
+                    if ($response->successful()) {
+                        $publicUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/{$filename}";
+                        $data['IMG_URL'] = $publicUrl;
+                    }
+                }
+            }
+        }
     }
 }

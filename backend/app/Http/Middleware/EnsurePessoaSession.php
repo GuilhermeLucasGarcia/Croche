@@ -16,24 +16,13 @@ class EnsurePessoaSession
             return $next($request);
         }
 
-        if (app()->environment('local')) {
-            $pessoa = Pessoa::query()->first();
-
-            if ($pessoa) {
-                Auth::login($pessoa);
-                $request->session()->regenerate();
-
-                return $next($request);
-            }
-        }
-
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Sua sessao expirou. Faça login novamente para acessar sua conta.',
             ], 401);
         }
 
-        return redirect('/')
-            ->with('account_error', 'Sua sessao expirou. Faça login novamente para acessar sua conta.');
+        return redirect()->route('login')
+            ->with('account_error', 'Sua sessão expirou. Faça login novamente para acessar sua conta.');
     }
 }

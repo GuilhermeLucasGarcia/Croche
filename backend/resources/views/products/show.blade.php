@@ -28,11 +28,14 @@
           <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
         </nav>
         <div class="actions">
-          <label class="search" aria-label="Buscar">
-            <span class="search__icon" aria-hidden="true">⌕</span>
-            <input class="search__input" type="search" placeholder="O que você procura hoje?" />
-          </label>
+          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
+            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
+            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
+          </form>
           <div class="iconbar" aria-label="Ações">
+            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
+              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
+            @endif
             <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
             <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
             <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
@@ -44,23 +47,40 @@
 
     <main class="container productPage">
       <section class="productHero" aria-label="Detalhes do produto">
+        @php
+          $allImages = [];
+          if ($product->IMG_URL) {
+              $allImages[] = $product->IMG_URL;
+          }
+          if (!empty($product->IMAGENS) && is_array($product->IMAGENS)) {
+              $allImages = array_merge($allImages, $product->IMAGENS);
+          }
+          // Remove duplicates
+          $allImages = array_values(array_unique($allImages));
+          $mainImage = count($allImages) > 0 ? $allImages[0] : null;
+        @endphp
+
         <div class="productGallery">
           <div class="productGallery__thumbs">
-            @for ($i = 0; $i < 3; $i++)
-              <button class="productGallery__thumb{{ $i === 1 ? ' is-active' : '' }}" type="button" aria-label="Miniatura do produto {{ $i + 1 }}">
-                @if ($product->IMG_URL)
-                  <img src="{{ $product->IMG_URL }}" alt="{{ $product->CODIGO ?? 'Produto' }}" />
-                @else
+            @if(count($allImages) > 0)
+              @foreach ($allImages as $i => $img)
+                <button class="productGallery__thumb{{ $i === 0 ? ' is-active' : '' }}" type="button" aria-label="Miniatura do produto {{ $i + 1 }}" onclick="document.getElementById('mainImage').src='{{ $img }}'; document.querySelectorAll('.productGallery__thumb').forEach(b => b.classList.remove('is-active')); this.classList.add('is-active');">
+                  <img src="{{ $img }}" alt="{{ $product->CODIGO ?? 'Produto' }}" />
+                </button>
+              @endforeach
+            @else
+              @for ($i = 0; $i < 3; $i++)
+                <button class="productGallery__thumb" type="button" aria-label="Miniatura do produto {{ $i + 1 }}">
                   <span class="productGallery__placeholder"></span>
-                @endif
-              </button>
-            @endfor
+                </button>
+              @endfor
+            @endif
             <span class="productGallery__dot" aria-hidden="true"></span>
           </div>
 
           <div class="productGallery__main">
-            @if ($product->IMG_URL)
-              <img src="{{ $product->IMG_URL }}" alt="{{ $product->CODIGO ?? 'Produto' }}" />
+            @if ($mainImage)
+              <img id="mainImage" src="{{ $mainImage }}" alt="{{ $product->CODIGO ?? 'Produto' }}" />
             @else
               <div class="productGallery__fallback">Sem imagem</div>
             @endif
@@ -140,8 +160,8 @@
 
           <div class="productDetails__media">
             <div class="videoCard">
-              @if ($product->IMG_URL)
-                <img src="{{ $product->IMG_URL }}" alt="{{ $product->CODIGO ?? 'Produto' }}" />
+              @if ($mainImage)
+                <img src="{{ $mainImage }}" alt="{{ $product->CODIGO ?? 'Produto' }}" />
               @endif
               <div class="videoCard__overlay">
                 <button class="videoCard__play" type="button" aria-label="Reproduzir video">▶</button>
@@ -160,21 +180,28 @@
 
         <div class="products similarGrid">
           @foreach ($similarProducts as $similarProduct)
-            <a class="pCard" href="{{ route('products.show', $similarProduct) }}">
-              @if($similarProduct->IMG_URL)
-                <div class="pCard__img" style="background: url('{{ $similarProduct->IMG_URL }}') center/cover"></div>
-              @else
-                <div class="pCard__img" style="background: linear-gradient(135deg, #f5f5fa, #ececf6)"></div>
-              @endif
+            @php
+              $similarImageUrl = $similarProduct->IMG_URL ?: (!empty($similarProduct->IMAGENS) && is_array($similarProduct->IMAGENS) ? $similarProduct->IMAGENS[0] : null);
+            @endphp
+            <article class="pCard">
+              <a href="{{ route('products.show', $similarProduct) }}" style="display: block; text-decoration: none;">
+                @if($similarImageUrl)
+                  <div class="pCard__img" style="background: url('{{ $similarImageUrl }}') center/cover"></div>
+                @else
+                  <div class="pCard__img" style="background: linear-gradient(135deg, #f5f5fa, #ececf6)"></div>
+                @endif
+              </a>
               <a class="pCard__wish" href="{{ route('favorites.index') }}" aria-label="Favoritar">♡</a>
-              <div class="pCard__meta">
-                <div class="pCard__text">
-                  <div class="pCard__name">{{ $similarProduct->CODIGO ?? 'Produto' }}</div>
-                  <div class="pCard__cat">{{ $similarProduct->category->NOME ?? 'Sem categoria' }}</div>
+              <a href="{{ route('products.show', $similarProduct) }}" style="display: block; text-decoration: none;">
+                <div class="pCard__meta">
+                  <div class="pCard__text">
+                    <div class="pCard__name">{{ $similarProduct->CODIGO ?? 'Produto' }}</div>
+                    <div class="pCard__cat">{{ $similarProduct->category->NOME ?? 'Sem categoria' }}</div>
+                  </div>
+                  <div class="pCard__price">R$ {{ number_format($similarProduct->VALOR ?? 0, 2, ',', '.') }}</div>
                 </div>
-                <div class="pCard__price">R$ {{ number_format($similarProduct->VALOR ?? 0, 2, ',', '.') }}</div>
-              </div>
-            </a>
+              </a>
+            </article>
           @endforeach
         </div>
       </section>

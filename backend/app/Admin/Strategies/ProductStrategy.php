@@ -99,6 +99,19 @@ class ProductStrategy extends AbstractAdminFormStrategy
                 'placeholder' => 'Selecione',
             ],
             [
+                'name' => 'IMG_URL',
+                'label' => 'Imagem Principal (URL)',
+                'type' => 'url',
+                'required' => false,
+                'placeholder' => 'https://...',
+            ],
+            [
+                'name' => 'IMAGENS',
+                'label' => 'Imagens do Produto',
+                'type' => 'images',
+                'required' => false,
+            ],
+            [
                 'name' => 'ATIVO',
                 'label' => 'Ativo',
                 'type' => 'checkbox',
@@ -115,6 +128,11 @@ class ProductStrategy extends AbstractAdminFormStrategy
             'VALOR' => ['required', 'numeric', 'min:0'],
             'ESTOQUE' => ['required', 'integer', 'min:0'],
             'CATEGORIA_ID' => ['required', 'integer', 'exists:CATEGORIA,id'],
+            'IMG_URL' => ['nullable', 'url', 'max:255'],
+            'IMAGENS' => ['nullable', 'array'],
+            'IMAGENS.*' => ['nullable', 'string'],
+            'IMAGENS_UPLOAD' => ['nullable', 'array'],
+            'IMAGENS_UPLOAD.*' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'ATIVO' => ['nullable', 'boolean'],
         ];
     }
@@ -141,6 +159,8 @@ class ProductStrategy extends AbstractAdminFormStrategy
     public function create(Request $request, array $data): Model
     {
         $data['ATIVO'] = $request->boolean('ATIVO');
+        
+        $this->handleImageUploads($request, $data);
 
         $model = new Product();
         $model->fill($data);
@@ -153,10 +173,61 @@ class ProductStrategy extends AbstractAdminFormStrategy
     {
         $data['ATIVO'] = $request->boolean('ATIVO');
 
+        $this->handleImageUploads($request, $data);
+
         $model->fill($data);
         $model->save();
 
         return $model;
+    }
+
+    protected function handleImageUploads(Request $request, array &$data)
+    {
+        // Se houver imagens antigas mantidas (vem como array de URLs)
+        $imagens = $request->input('IMAGENS', []);
+        if (!is_array($imagens)) {
+            $imagens = [];
+        }
+
+        // Se houver novos uploads
+        if ($request->hasFile('IMAGENS_UPLOAD')) {
+            \Illuminate\Support\Facades\Log::info('Has file IMAGENS_UPLOAD', ['files' => $request->file('IMAGENS_UPLOAD')]);
+            foreach ($request->file('IMAGENS_UPLOAD') as $file) {
+                if ($file->isValid()) {
+                    $filename = uniqid() . '-' . time() . '.' . $file->getClientOriginalExtension();
+                    
+                    // Upload to Supabase using REST API
+                    $supabaseUrl = env('SUPABASE_URL', 'https://qcpdmmnalmbzlgqccmih.supabase.co');
+                    $supabaseKey = env('SUPABASE_SERVICE_ROLE_KEY'); // Will use the one from toolcall
+                    
+                    if ($supabaseUrl && $supabaseKey) {
+                        $bucket = 'produtos-imagens';
+                        $url = "{$supabaseUrl}/storage/v1/object/{$bucket}/{$filename}";
+                        
+                        $response = \Illuminate\Support\Facades\Http::withoutVerifying()->withHeaders([
+                            'Authorization' => "Bearer {$supabaseKey}",
+                            'Content-Type' => $file->getMimeType(),
+                        ])->withBody(file_get_contents($file->getRealPath()), $file->getMimeType())
+                        ->post($url);
+                        
+                        \Illuminate\Support\Facades\Log::info('Supabase upload response', ['status' => $response->status(), 'body' => $response->body()]);
+
+                        if ($response->successful()) {
+                            $publicUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/{$filename}";
+                            $imagens[] = $publicUrl;
+                        }
+                    } else {
+                        \Illuminate\Support\Facades\Log::error('Missing supabase keys');
+                    }
+                } else {
+                    \Illuminate\Support\Facades\Log::warning('File not valid');
+                }
+            }
+        } else {
+            \Illuminate\Support\Facades\Log::info('No IMAGENS_UPLOAD file');
+        }
+        
+        $data['IMAGENS'] = array_values(array_filter($imagens));
     }
 }
 

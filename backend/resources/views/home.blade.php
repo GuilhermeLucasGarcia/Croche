@@ -24,11 +24,14 @@
           @endforeach
         </nav>
         <div class="actions">
-          <label class="search" aria-label="Buscar">
-            <span class="search__icon" aria-hidden="true">⌕</span>
-            <input class="search__input" type="search" placeholder="O que você procura hoje?" />
-          </label>
+          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
+            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
+            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
+          </form>
           <div class="iconbar" aria-label="Ações">
+            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
+              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
+            @endif
             <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
             <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
             <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
@@ -116,25 +119,6 @@
         </div>
       </section>
 
-      <section class="section container" aria-label="Promoção">
-        <div class="sectionHeader">
-          <span class="sectionHeader__marker" aria-hidden="true"></span>
-          <h2 class="sectionHeader__title">Promoção</h2>
-        </div>
-        <div class="promoGrid">
-          <a class="promoCard promoCard--left" href="#">
-            <div class="promoCard__overlay">
-              <div class="promoCard__badge">30% de desconto</div>
-            </div>
-          </a>
-          <a class="promoCard promoCard--right" href="#">
-            <div class="promoCard__overlay">
-              <div class="promoCard__badge">15% de desconto</div>
-            </div>
-          </a>
-        </div>
-      </section>
-
       <section class="section container" aria-label="Em destaque">
         <div class="sectionHeader">
           <span class="sectionHeader__marker" aria-hidden="true"></span>
@@ -142,17 +126,24 @@
         </div>
         <div class="productGrid">
           @foreach($featuredProducts as $product)
-          <a class="productCard" href="{{ route('products.show', $product->id) }}">
-            <button class="wishlist" type="button" aria-label="Favoritar">♡</button>
-            <div class="productCard__img" @if($product->IMG_URL) style="background-image: url('{{ $product->IMG_URL }}'); background-size: cover; background-position: center;" @endif aria-hidden="true"></div>
-            <div class="productCard__body">
-              <div class="productCard__name">{{ $product->CODIGO }}</div>
-              <div class="productCard__meta">
-                <span class="productCard__cat">{{ $product->category->NOME ?? 'Sem categoria' }}</span>
-                <span class="productCard__price">R$ {{ number_format($product->VALOR, 2, ',', '.') }}</span>
+          @php
+            $imageUrl = $product->IMG_URL ?: (!empty($product->IMAGENS) && is_array($product->IMAGENS) ? $product->IMAGENS[0] : null);
+          @endphp
+          <article class="productCard">
+            <button class="wishlist" type="button" aria-label="Favoritar" style="z-index: 2;">♡</button>
+            <a href="{{ route('products.show', $product->id) }}" style="display: block; text-decoration: none;">
+              <div class="productCard__img" @if($imageUrl) style="background-image: url('{{ $imageUrl }}'); background-size: cover; background-position: center;" @endif aria-hidden="true"></div>
+            </a>
+            <a href="{{ route('products.show', $product->id) }}" style="display: block; text-decoration: none; color: inherit;">
+              <div class="productCard__body">
+                <div class="productCard__name">{{ $product->CODIGO }}</div>
+                <div class="productCard__meta">
+                  <span class="productCard__cat">{{ $product->category->NOME ?? 'Sem categoria' }}</span>
+                  <span class="productCard__price">R$ {{ number_format($product->VALOR, 2, ',', '.') }}</span>
+                </div>
               </div>
-            </div>
-          </a>
+            </a>
+          </article>
           @endforeach
         </div>
       </section>

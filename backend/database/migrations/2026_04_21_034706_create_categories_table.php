@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('CATEGORIA', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+            $table->string('NOME');
+            $table->string('slug')->unique()->nullable();
+            $table->text('DESCRICAO')->nullable();
+            $table->string('IMG_URL')->nullable();
+            $table->unsignedBigInteger('CATEGORIA_PAI_ID')->nullable();
+            $table->boolean('ATIVO')->default(true);
+            $table->timestamp('DT_CRIACAO')->nullable();
+            $table->timestamp('DT_ALTERACAO')->nullable();
         });
     }
 
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('CATEGORIA');
     }
 };

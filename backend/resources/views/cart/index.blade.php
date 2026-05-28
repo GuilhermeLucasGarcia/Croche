@@ -27,11 +27,14 @@
           <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
         </nav>
         <div class="actions">
-          <label class="search" aria-label="Buscar">
-            <span class="search__icon" aria-hidden="true">⌕</span>
-            <input class="search__input" type="search" placeholder="O que você procura hoje?" />
-          </label>
+          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
+            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
+            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
+          </form>
           <div class="iconbar" aria-label="Ações">
+            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
+              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
+            @endif
             <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
             <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
             <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
@@ -59,19 +62,23 @@
         </div>
 
         @forelse ($cartItems as $item)
+          @php
+            $product = $item['product'];
+            $cartImageUrl = $product->IMG_URL ?: (!empty($product->IMAGENS) && is_array($product->IMAGENS) ? $product->IMAGENS[0] : null);
+          @endphp
           <article class="cartRow">
             <div class="cartRow__product">
-              <a class="cartRow__thumb" href="{{ route('products.show', $item['product']) }}">
-                @if ($item['product']->IMG_URL)
-                  <img src="{{ $item['product']->IMG_URL }}" alt="{{ $item['product']->CODIGO ?? 'Produto' }}" />
+              <a class="cartRow__thumb" href="{{ route('products.show', $product) }}">
+                @if ($cartImageUrl)
+                  <img src="{{ $cartImageUrl }}" alt="{{ $product->CODIGO ?? 'Produto' }}" />
                 @else
                   <span class="cartRow__thumbPlaceholder">Sem imagem</span>
                 @endif
               </a>
 
               <div class="cartRow__info">
-                <a class="cartRow__name" href="{{ route('products.show', $item['product']) }}">
-                  {{ $item['product']->CODIGO ?? 'Produto' }}
+                <a class="cartRow__name" href="{{ route('products.show', $product) }}">
+                  {{ $product->CODIGO ?? 'Produto' }}
                 </a>
                 <div class="cartRow__meta">Cor: {{ $item['color'] }}</div>
                 <div class="cartRow__meta">Tamanho: {{ $item['size'] }}</div>

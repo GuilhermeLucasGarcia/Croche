@@ -3,15 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>{{ $title ?? 'Produtos' }} - Philos Crochê</title>
+    <title>Login - Philos Crochê</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Aguafina+Script&family=Inter:wght@400&family=Montserrat:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Aguafina+Script&family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="{{ asset('css/home.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/products.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/account.css') }}" />
+    <style>
+      .authWrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 300px);
+        padding: 40px 20px;
+      }
+      .authCard {
+        width: 100%;
+        max-width: 480px;
+      }
+    </style>
   </head>
   <body>
     <header class="topbar">
@@ -32,11 +45,8 @@
             <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
           </form>
           <div class="iconbar" aria-label="Ações">
-            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
-              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
-            @endif
             <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
+            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Minha conta">👤</a>
             <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
           </div>
         </div>
@@ -44,54 +54,45 @@
       <div class="topbar__divider" role="presentation"></div>
     </header>
 
-    <main class="container catalog">
-      <div class="catalog__grid">
-        <aside class="filters" aria-label="Filtros">
-          <div class="filters__card">
-            <div class="filters__header">
-              <div class="filters__title">Filtro</div>
-              <div class="filters__icon" aria-hidden="true">⟂</div>
-            </div>
+    <main class="container authWrapper">
+      <section class="card authCard">
+        <div class="card__header" style="text-align: center; margin-bottom: 24px;">
+          <h3>Bem-vindo de volta</h3>
+          <p>Faça login para acessar sua conta.</p>
+        </div>
 
-            <div class="filters__section">
-              <div class="filters__sectionTitle">Categorias</div>
-              @foreach($categories as $cat)
-                <a class="filters__row" href="{{ route('products.index', ['category' => $cat->NOME]) }}"><span>{{ $cat->NOME }}</span><span class="filters__chev">›</span></a>
+        @if (session('account_error'))
+          <div class="alert alert--error">{{ session('account_error') }}</div>
+        @endif
+
+        @if ($errors->any())
+          <div class="alert alert--error">
+            <ul style="margin: 0; padding-left: 20px;">
+              @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
               @endforeach
-            </div>
+            </ul>
           </div>
-        </aside>
+        @endif
 
-        <section class="results" aria-label="Lista de produtos">
-          <h1 class="results__title">{{ $title ?? 'Produtos' }}</h1>
-          <div class="products">
-            @foreach ($products as $product)
-              @php
-                $imageUrl = $product->IMG_URL ?: (!empty($product->IMAGENS) && is_array($product->IMAGENS) ? $product->IMAGENS[0] : null);
-              @endphp
-              <article class="pCard">
-                <a href="{{ route('products.show', $product) }}" style="display: block; text-decoration: none;">
-                  @if($imageUrl)
-                    <div class="pCard__img" style="background: url('{{ $imageUrl }}') center/cover"></div>
-                  @else
-                    <div class="pCard__img" style="background: linear-gradient(135deg, #f5f5fa, #ececf6)"></div>
-                  @endif
-                </a>
-                <a class="pCard__wish" href="{{ route('favorites.index') }}" aria-label="Favoritar">♡</a>
-                <a href="{{ route('products.show', $product) }}" style="display: block; text-decoration: none;">
-                  <div class="pCard__meta">
-                    <div class="pCard__text">
-                      <div class="pCard__name">{{ $product->CODIGO ?? $product->NOME ?? 'Produto' }}</div>
-                      <div class="pCard__cat">{{ $product->category->NOME ?? 'Sem categoria' }}</div>
-                    </div>
-                    <div class="pCard__price">R$ {{ number_format($product->VALOR, 2, ',', '.') }}</div>
-                  </div>
-                </a>
-              </article>
-            @endforeach
+        <form method="post" action="{{ route('login.post') }}" class="accountForm js-loading-form" style="margin-top: 0;">
+          @csrf
+
+          <div class="formGrid" style="grid-template-columns: 1fr; gap: 20px;">
+            <label class="field">
+              <span>E-mail</span>
+              <input type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="seu@email.com" />
+            </label>
+
+            <label class="field">
+              <span>Senha</span>
+              <input type="password" name="password" required placeholder="Sua senha" />
+            </label>
           </div>
-        </section>
-      </div>
+
+          <button class="btnPrimary" type="submit" data-loading-text="Entrando..." style="width: 100%; margin-top: 24px;">Entrar</button>
+        </form>
+      </section>
     </main>
 
     <footer class="footer" aria-label="Rodapé">
@@ -124,5 +125,19 @@
       </div>
       <div class="container footer__copy">Copyright © 2026 Philos Croche Ltd. Todos os direitos reservados.</div>
     </footer>
+
+    <script>
+      document.querySelectorAll('.js-loading-form').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          var button = form.querySelector('button[type="submit"]');
+          if (!button) return;
+          
+          button.dataset.originalText = button.textContent;
+          button.textContent = button.dataset.loadingText || 'Carregando...';
+          button.disabled = true;
+          form.classList.add('is-submitting');
+        });
+      });
+    </script>
   </body>
 </html>

@@ -18,6 +18,15 @@ class ProductController extends Controller
             });
         }
 
+        if ($request->filled('q')) {
+            $searchTerm = '%' . $request->q . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('CODIGO', 'like', $searchTerm)
+                  ->orWhere('DESCRICAO', 'like', $searchTerm)
+                  ->orWhere('DETALHES', 'like', $searchTerm);
+            });
+        }
+
         $products = $query->orderBy('id', 'desc')->paginate(12);
         $categories = Category::where('ATIVO', true)->get();
 
