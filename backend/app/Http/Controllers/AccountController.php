@@ -73,6 +73,7 @@ class AccountController extends Controller
             'IMG_URL.url' => 'Informe uma URL valida para o avatar.',
         ]);
 
+        $validated['EMAIL'] = strtolower($validated['EMAIL']);
         $user->fill($validated);
         $user->save();
 

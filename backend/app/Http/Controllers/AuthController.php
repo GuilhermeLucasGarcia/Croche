@@ -24,7 +24,8 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $pessoa = Pessoa::where('EMAIL', $request->email)->first();
+        $email = strtolower($request->email);
+        $pessoa = Pessoa::whereRaw('LOWER(EMAIL) = ?', [$email])->first();
 
         // 1. Validação de credenciais e checagem de status de conta ativa
         if (!$pessoa || !Hash::check($request->password, $pessoa->SENHA)) {
