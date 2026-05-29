@@ -24,7 +24,17 @@ services:
       - key: LARAVEL_OPTIMIZE
         value: "true"
       - key: RUN_MIGRATIONS
-        value: "false"
+        value: "true"
+      - key: BOOTSTRAP_ADMIN
+        value: "true"
+      - key: ADMIN_BOOTSTRAP_EMAIL
+        value: "admin@philoscroche.com.br"
+      - key: ADMIN_BOOTSTRAP_NAME
+        value: "Administrador"
+      - key: ADMIN_BOOTSTRAP_USERNAME
+        value: "admin"
+      - key: ADMIN_BOOTSTRAP_PASSWORD
+        sync: false
       - key: APP_URL
         sync: false
       - key: APP_KEY

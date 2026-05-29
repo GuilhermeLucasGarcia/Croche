@@ -18,6 +18,15 @@ if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
   php artisan migrate --force
 fi
 
+if [ "${BOOTSTRAP_ADMIN:-false}" = "true" ]; then
+  if [ "${APP_ENV:-production}" = "production" ] && [ -z "${ADMIN_BOOTSTRAP_PASSWORD:-}" ]; then
+    echo "ADMIN_BOOTSTRAP_PASSWORD nao definido. Configure a variavel de ambiente ADMIN_BOOTSTRAP_PASSWORD para criar o admin." >&2
+    exit 1
+  fi
+
+  php artisan app:ensure-admin
+fi
+
 if [ "${LARAVEL_OPTIMIZE:-true}" = "true" ]; then
   php artisan config:cache
   php artisan route:cache || true
