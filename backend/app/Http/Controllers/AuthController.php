@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -27,16 +28,28 @@ class AuthController extends Controller
         ]);
 
         $email = strtolower($request->email);
-        $pessoa = Pessoa::where('EMAIL', $email)->first();
+        $this->ensureBootstrapAdminExists();
+        $pessoa = $this->findPessoaByEmail($email);
 
         // 1. Validação de credenciais e checagem de status de conta ativa
         if (!$pessoa || !Hash::check($request->password, $pessoa->SENHA)) {
+            Log::warning('Falha no login: credenciais inválidas.', [
+                'email' => $email,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'user_found' => (bool) $pessoa,
+            ]);
             return back()->withErrors([
                 'email' => 'As credenciais fornecidas não correspondem aos nossos registros.',
             ])->onlyInput('email');
         }
 
-        if (!$pessoa->ATIVO) {
+        if (Schema::hasTable('PESSOA') && Schema::hasColumn('PESSOA', 'ATIVO') && ! (bool) $pessoa->ATIVO) {
+            Log::warning('Falha no login: conta inativa.', [
+                'pessoa_id' => $pessoa->id,
+                'email' => $email,
+                'ip' => $request->ip(),
+            ]);
             return back()->withErrors([
                 'email' => 'Esta conta está bloqueada ou inativa.',
             ])->onlyInput('email');
@@ -46,7 +59,7 @@ class AuthController extends Controller
         Auth::login($pessoa);
         $request->session()->regenerate();
 
-        $isAdmin = $pessoa->PERFIL === 'admin';
+        $isAdmin = strtolower((string) $pessoa->PERFIL) === 'admin';
 
         // 2. Geração de tokens de acesso e refresh
         $scopes = $isAdmin ? ['admin:all'] : ['user:read', 'user:write'];
@@ -111,6 +124,78 @@ class AuthController extends Controller
             'action' => 'Login',
             'description' => 'Login realizado com sucesso pelo IP: ' . $request->ip() . ' - Agente: ' . $request->userAgent(),
         ]);
+    }
+
+    private function findPessoaByEmail(string $email): ?Pessoa
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            return Pessoa::whereRaw('LOWER("EMAIL") = ?', [$email])->first();
+        }
+
+        return Pessoa::whereRaw('LOWER(EMAIL) = ?', [$email])->first();
+    }
+
+    private function ensureBootstrapAdminExists(): void
+    {
+        $bootstrapEmail = strtolower((string) env('ADMIN_BOOTSTRAP_EMAIL', ''));
+        $bootstrapPassword = (string) env('ADMIN_BOOTSTRAP_PASSWORD', '');
+
+        if ($bootstrapEmail === '' || $bootstrapPassword === '') {
+            return;
+        }
+
+        if (!Schema::hasTable('PESSOA')) {
+            return;
+        }
+
+        try {
+            $pessoa = $this->findPessoaByEmail($bootstrapEmail);
+
+            if (!$pessoa) {
+                $username = (string) env('ADMIN_BOOTSTRAP_USERNAME', 'admin');
+                if ($username === '') {
+                    $username = 'admin';
+                }
+
+                if (Pessoa::where('NOME_USUARIO', $username)->exists()) {
+                    $username = $username . '_' . Str::lower(Str::random(6));
+                }
+
+                $payload = [
+                    'NOME' => (string) env('ADMIN_BOOTSTRAP_NAME', 'Administrador'),
+                    'NOME_USUARIO' => $username,
+                    'SENHA' => Hash::make($bootstrapPassword),
+                    'PERFIL' => 'admin',
+                    'EMAIL' => $bootstrapEmail,
+                ];
+
+                if (Schema::hasColumn('PESSOA', 'ATIVO')) {
+                    $payload['ATIVO'] = true;
+                }
+
+                Pessoa::create($payload);
+                return;
+            }
+
+            $updates = [];
+
+            if (strtolower((string) $pessoa->PERFIL) !== 'admin') {
+                $updates['PERFIL'] = 'admin';
+            }
+
+            if (Schema::hasColumn('PESSOA', 'ATIVO') && ! (bool) $pessoa->ATIVO) {
+                $updates['ATIVO'] = true;
+            }
+
+            if (!empty($updates)) {
+                $pessoa->fill($updates);
+                $pessoa->save();
+            }
+        } catch (\Throwable $e) {
+            Log::error('Falha ao garantir bootstrap do admin.', ['exception' => $e]);
+        }
     }
 
     public function logout(Request $request)
