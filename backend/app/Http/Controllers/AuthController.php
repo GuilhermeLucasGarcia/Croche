@@ -8,6 +8,8 @@ use App\Models\PersonalAccessToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -25,7 +27,7 @@ class AuthController extends Controller
         ]);
 
         $email = strtolower($request->email);
-        $pessoa = Pessoa::whereRaw('LOWER(EMAIL) = ?', [$email])->first();
+        $pessoa = Pessoa::where('EMAIL', $email)->first();
 
         // 1. Validação de credenciais e checagem de status de conta ativa
         if (!$pessoa || !Hash::check($request->password, $pessoa->SENHA)) {
@@ -48,10 +50,24 @@ class AuthController extends Controller
 
         // 2. Geração de tokens de acesso e refresh
         $scopes = $isAdmin ? ['admin:all'] : ['user:read', 'user:write'];
-        $this->generateTokensForUser($pessoa, $scopes);
+        try {
+            $this->generateTokensForUser($pessoa, $scopes);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao gerar tokens de autenticação.', [
+                'pessoa_id' => $pessoa->id,
+                'exception' => $e,
+            ]);
+        }
 
         // 3. Registro de atividade de login
-        $this->logActivity($pessoa, clone $request);
+        try {
+            $this->logActivity($pessoa, clone $request);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao registrar log de atividade.', [
+                'pessoa_id' => $pessoa->id,
+                'exception' => $e,
+            ]);
+        }
 
         // 5. Redirecionamento personalizado baseado no perfil do usuário logado
         if ($isAdmin) {
@@ -63,6 +79,10 @@ class AuthController extends Controller
 
     protected function generateTokensForUser(Pessoa $pessoa, array $scopes)
     {
+        if (!Schema::hasTable('personal_access_tokens')) {
+            return;
+        }
+
         $accessToken = Str::random(60);
         $refreshToken = Str::random(60);
 
@@ -82,6 +102,10 @@ class AuthController extends Controller
 
     protected function logActivity(Pessoa $pessoa, Request $request)
     {
+        if (!Schema::hasTable('pessoa_activity_logs')) {
+            return;
+        }
+
         PessoaActivityLog::create([
             'pessoa_id' => $pessoa->id,
             'action' => 'Login',
