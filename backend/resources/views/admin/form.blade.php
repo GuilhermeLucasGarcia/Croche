@@ -135,12 +135,23 @@
                   <div class="field__image-wrapper" style="border: 1px dashed #ccc; padding: 16px; border-radius: 8px;">
                     <div id="existing_image_{{ $name }}" style="margin-bottom: 12px; {{ $value ? '' : 'display: none;' }}">
                       <div style="position: relative; width: 150px; height: 150px;">
-                        <img src="{{ $value }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" />
-                        <input type="hidden" name="{{ $name }}" value="{{ $value }}" />
-                        <button type="button" onclick="this.parentElement.parentElement.style.display='none'; this.previousElementSibling.value='';" style="position: absolute; top: -8px; right: -8px; background: red; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">&times;</button>
+                        <img id="existing_image_preview_{{ $name }}" src="{{ $value }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" />
+                        <button type="button" onclick="document.getElementById('field_url_{{ $name }}').value=''; document.getElementById('existing_image_{{ $name }}').style.display='none';" style="position: absolute; top: -8px; right: -8px; background: red; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">&times;</button>
                       </div>
                     </div>
                     
+                    <input
+                      class="field__control"
+                      id="field_url_{{ $name }}"
+                      name="{{ $name }}"
+                      type="url"
+                      value="{{ $value }}"
+                      placeholder="Cole o link da imagem (opcional)"
+                      autocomplete="off"
+                      oninput="(function(){ var v=document.getElementById('field_url_{{ $name }}').value; var wrap=document.getElementById('existing_image_{{ $name }}'); var img=document.getElementById('existing_image_preview_{{ $name }}'); if(!v){ wrap.style.display='none'; return; } img.src=v; wrap.style.display='block'; img.onerror=function(){ wrap.style.display='none'; }; })()"
+                    />
+                    <small style="color: #666; display: block; margin-top: 4px;">Ou cole o link direto da imagem (https://...).</small>
+
                     <input 
                       type="file" 
                       id="field_{{ $name }}" 

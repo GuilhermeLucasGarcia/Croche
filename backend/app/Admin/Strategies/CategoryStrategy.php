@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CategoryStrategy extends AbstractAdminFormStrategy
 {
@@ -180,23 +181,31 @@ class CategoryStrategy extends AbstractAdminFormStrategy
                 $supabaseUrl = env('SUPABASE_URL', 'https://qcpdmmnalmbzlgqccmih.supabase.co');
                 $supabaseKey = env('SUPABASE_SERVICE_ROLE_KEY');
                 
-                if ($supabaseUrl && $supabaseKey) {
-                    $bucket = 'produtos-imagens'; // Usando o mesmo bucket de imagens
-                    $url = "{$supabaseUrl}/storage/v1/object/{$bucket}/{$filename}";
-                    
-                    $response = \Illuminate\Support\Facades\Http::withoutVerifying()->withHeaders([
-                        'Authorization' => "Bearer {$supabaseKey}",
-                        'apikey' => $supabaseKey,
-                        'Content-Type' => $file->getMimeType(),
-                        'x-upsert' => 'true',
-                    ])->withBody(file_get_contents($file->getRealPath()), $file->getMimeType())
-                    ->put($url);
-                    
-                    if ($response->successful()) {
-                        $publicUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/{$filename}";
-                        $data['IMG_URL'] = $publicUrl;
-                    }
+                if (!$supabaseUrl || !$supabaseKey) {
+                    throw ValidationException::withMessages([
+                        'IMG_URL_UPLOAD' => 'Não foi possível enviar a imagem. Configure SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.',
+                    ]);
                 }
+
+                $bucket = 'produtos-imagens';
+                $url = "{$supabaseUrl}/storage/v1/object/{$bucket}/{$filename}";
+
+                $response = \Illuminate\Support\Facades\Http::withoutVerifying()->withHeaders([
+                    'Authorization' => "Bearer {$supabaseKey}",
+                    'apikey' => $supabaseKey,
+                    'Content-Type' => $file->getMimeType(),
+                    'x-upsert' => 'true',
+                ])->withBody(file_get_contents($file->getRealPath()), $file->getMimeType())
+                ->put($url);
+
+                if (!$response->successful()) {
+                    throw ValidationException::withMessages([
+                        'IMG_URL_UPLOAD' => "Falha ao enviar imagem (HTTP {$response->status()}).",
+                    ]);
+                }
+
+                $publicUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/{$filename}";
+                $data['IMG_URL'] = $publicUrl;
             }
         }
     }
