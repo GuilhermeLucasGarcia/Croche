@@ -14,35 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/cart.css') }}" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="container topbar__inner">
-        <a class="brand" href="{{ url('/') }}">
-          <span class="brand__name">Philos Croche</span>
-        </a>
-        <nav class="nav" aria-label="Categorias">
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Amigurumi']) }}">Amigurumi</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Maternidade']) }}">Maternidade</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Acessórios']) }}">Acessórios</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Decoração']) }}">Decoração</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
-        </nav>
-        <div class="actions">
-          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
-            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
-            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
-          </form>
-          <div class="iconbar" aria-label="Ações">
-            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
-              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
-            @endif
-            <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
-            <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
-          </div>
-        </div>
-      </div>
-      <div class="topbar__divider" role="presentation"></div>
-    </header>
+    @include('partials.topbar')
 
     <main class="container cartPage">
       <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -88,14 +60,28 @@
             <div class="cartRow__price">R$ {{ number_format($item['price'], 2, ',', '.') }}</div>
 
             <div class="cartRow__qty">
-              <button type="button" aria-label="Diminuir quantidade">−</button>
+              <form method="post" action="{{ route('cart.items.update', $item['key']) }}" style="display: contents;">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}" />
+                <button type="submit" aria-label="Diminuir quantidade">−</button>
+              </form>
               <span>{{ $item['quantity'] }}</span>
-              <button type="button" aria-label="Aumentar quantidade">+</button>
+              <form method="post" action="{{ route('cart.items.update', $item['key']) }}" style="display: contents;">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="quantity" value="{{ min(99, $item['quantity'] + 1) }}" />
+                <button type="submit" aria-label="Aumentar quantidade">+</button>
+              </form>
             </div>
 
             <div class="cartRow__shipping">{{ $item['shipping'] > 0 ? 'R$ ' . number_format($item['shipping'], 2, ',', '.') : 'Frete gratis' }}</div>
             <div class="cartRow__subtotal">R$ {{ number_format($item['subtotal'], 2, ',', '.') }}</div>
-            <button class="cartRow__remove" type="button" aria-label="Remover item">🗑</button>
+            <form method="post" action="{{ route('cart.items.destroy', $item['key']) }}" style="display: contents;">
+              @csrf
+              @method('DELETE')
+              <button class="cartRow__remove" type="submit" aria-label="Remover item">🗑</button>
+            </form>
           </article>
         @empty
           <div class="cartEmpty">

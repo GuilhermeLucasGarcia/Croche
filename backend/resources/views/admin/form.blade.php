@@ -329,12 +329,14 @@
         form.addEventListener('input', function (e) {
           if (!e.target || !e.target.name) return;
           dirty = true;
+          if (e.target.type === 'file') return;
           debounce(e.target.name, () => validateField(e.target.name, e.target.type === 'checkbox' ? e.target.checked : e.target.value), 350);
         });
 
         form.addEventListener('change', function (e) {
           if (!e.target || !e.target.name) return;
           dirty = true;
+          if (e.target.type === 'file') return;
           debounce(e.target.name, () => validateField(e.target.name, e.target.type === 'checkbox' ? e.target.checked : e.target.value), 50);
         });
 

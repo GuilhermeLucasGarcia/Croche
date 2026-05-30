@@ -25,7 +25,13 @@ Route::middleware('account.session')->group(function () {
 });
 
 Route::get('/carrinho', [CartController::class, 'index'])->name('cart.index');
+Route::post('/carrinho/itens', [CartController::class, 'store'])->name('cart.items.store');
+Route::patch('/carrinho/itens/{itemKey}', [CartController::class, 'update'])->name('cart.items.update');
+Route::delete('/carrinho/itens/{itemKey}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+
 Route::get('/favoritos', [FavoriteController::class, 'index'])->name('favorites.index');
+Route::post('/favoritos/toggle', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+Route::delete('/favoritos/{product}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
 Route::get('/produtos', [ProductController::class, 'index'])->name('products.index');
 Route::get('/produtos/{product}', [ProductController::class, 'show'])->name('products.show');
 

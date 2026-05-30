@@ -36,6 +36,7 @@ class ProductStrategyTest extends TestCase
             $table->timestamp('DT_ALTERACAO')->nullable();
             $table->string('CODIGO')->nullable();
             $table->string('DESCRICAO')->nullable();
+            $table->json('IMAGENS')->nullable();
             $table->double('VALOR')->nullable();
             $table->integer('ESTOQUE')->default(0);
             $table->unsignedBigInteger('CATEGORIA_ID')->nullable();
@@ -139,4 +140,3 @@ class ProductStrategyTest extends TestCase
         ]);
     }
 }
-

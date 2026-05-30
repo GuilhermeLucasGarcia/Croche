@@ -14,35 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/account.css') }}" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="container topbar__inner">
-        <a class="brand" href="{{ url('/') }}">
-          <span class="brand__name">Philos Croche</span>
-        </a>
-        <nav class="nav" aria-label="Categorias">
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Amigurumi']) }}">Amigurumi</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Maternidade']) }}">Maternidade</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Acessórios']) }}">Acessórios</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Decoração']) }}">Decoração</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
-        </nav>
-        <div class="actions">
-          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
-            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
-            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
-          </form>
-          <div class="iconbar" aria-label="Ações">
-            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
-              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
-            @endif
-            <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Minha conta">👤</a>
-            <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
-          </div>
-        </div>
-      </div>
-      <div class="topbar__divider" role="presentation"></div>
-    </header>
+    @include('partials.topbar')
 
     <main class="container accountPage">
       <nav class="breadcrumb" aria-label="Breadcrumb">

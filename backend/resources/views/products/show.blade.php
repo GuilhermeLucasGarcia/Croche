@@ -15,35 +15,7 @@
     <link rel="stylesheet" href="{{ asset('css/product-show.css') }}" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="container topbar__inner">
-        <a class="brand" href="{{ url('/') }}">
-          <span class="brand__name">Philos Croche</span>
-        </a>
-        <nav class="nav" aria-label="Categorias">
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Amigurumi']) }}">Amigurumi</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Maternidade']) }}">Maternidade</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Acessórios']) }}">Acessórios</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Decoração']) }}">Decoração</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
-        </nav>
-        <div class="actions">
-          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
-            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
-            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
-          </form>
-          <div class="iconbar" aria-label="Ações">
-            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
-              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
-            @endif
-            <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
-            <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
-          </div>
-        </div>
-      </div>
-      <div class="topbar__divider" role="presentation"></div>
-    </header>
+    @include('partials.topbar')
 
     <main class="container productPage">
       <section class="productHero" aria-label="Detalhes do produto">
@@ -97,20 +69,50 @@
             </div>
           </div>
 
-          <div class="productInfo__colors">
-            <div class="productInfo__label">Cores disponíveis</div>
-            <div class="productInfo__swatches">
-              <span class="productInfo__swatch" style="background:#26385b"></span>
-              <span class="productInfo__swatch" style="background:#f0cc3f"></span>
-              <span class="productInfo__swatch" style="background:#f3a1c2"></span>
-              <span class="productInfo__swatch" style="background:#9d2348"></span>
-            </div>
-          </div>
+          <form method="post" action="{{ route('cart.items.store') }}">
+            @csrf
+            <input type="hidden" name="product_id" value="{{ $product->id }}" />
 
-          <div class="productInfo__purchase">
-            <a class="productInfo__cta" href="{{ route('cart.index') }}">Adicionar ao carrinho</a>
-            <div class="productInfo__price">R$ {{ number_format($product->VALOR ?? 0, 2, ',', '.') }}</div>
-          </div>
+            <div class="productInfo__colors">
+              <div class="productInfo__label">Cores disponíveis</div>
+              <div class="productInfo__swatches">
+                <span class="productInfo__swatch" style="background:#26385b"></span>
+                <span class="productInfo__swatch" style="background:#f0cc3f"></span>
+                <span class="productInfo__swatch" style="background:#f3a1c2"></span>
+                <span class="productInfo__swatch" style="background:#9d2348"></span>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+              <label style="display: grid; gap: 6px; font-size: 14px; color: #3c4242;">
+                Cor
+                <select name="color" style="height: 44px; border-radius: 8px; border: 1px solid rgba(60, 66, 66, 0.35); padding: 0 12px;">
+                  <option value="natural">Natural</option>
+                  <option value="azul marinho">Azul marinho</option>
+                  <option value="rosa">Rosa</option>
+                  <option value="amarelo">Amarelo</option>
+                </select>
+              </label>
+              <label style="display: grid; gap: 6px; font-size: 14px; color: #3c4242;">
+                Tamanho
+                <select name="size" style="height: 44px; border-radius: 8px; border: 1px solid rgba(60, 66, 66, 0.35); padding: 0 12px;">
+                  <option value="unico">Único</option>
+                  <option value="P">P</option>
+                  <option value="M">M</option>
+                  <option value="G">G</option>
+                </select>
+              </label>
+              <label style="display: grid; gap: 6px; font-size: 14px; color: #3c4242;">
+                Quantidade
+                <input name="quantity" type="number" min="1" max="99" value="1" style="width: 110px; height: 44px; border-radius: 8px; border: 1px solid rgba(60, 66, 66, 0.35); padding: 0 12px;" />
+              </label>
+            </div>
+
+            <div class="productInfo__purchase">
+              <button class="productInfo__cta" type="submit">Adicionar ao carrinho</button>
+              <div class="productInfo__price">R$ {{ number_format($product->VALOR ?? 0, 2, ',', '.') }}</div>
+            </div>
+          </form>
 
           <div class="productInfo__features">
             <div class="featureItem">
@@ -147,8 +149,8 @@
 
         <div class="productDetails__content">
           <div class="productDetails__text">
-            <p>{{ $product->DESCRICAO ?: 'Produto artesanal em crochê feito com acabamento cuidadoso e ótimo para presentear ou decorar.' }}</p>
-            <p>{{ $product->DETALHES ?: 'Produzido manualmente com fios selecionados, textura macia e visual delicado para o dia a dia.' }}</p>
+            <p>{{ $product->DESCRICAO ?: 'Descrição não cadastrada.' }}</p>
+            <p>{{ $product->DETALHES ?: 'Detalhes não cadastrados.' }}</p>
 
             <div class="productSpecs">
               <div class="productSpecs__item"><strong>Categoria:</strong> {{ $product->category->NOME ?? 'Sem categoria' }}</div>
@@ -191,7 +193,11 @@
                   <div class="pCard__img" style="background: linear-gradient(135deg, #f5f5fa, #ececf6)"></div>
                 @endif
               </a>
-              <a class="pCard__wish" href="{{ route('favorites.index') }}" aria-label="Favoritar">♡</a>
+              <form class="pCard__wish" method="post" action="{{ route('favorites.toggle') }}">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $similarProduct->id }}" />
+                <button type="submit" aria-label="Favoritar" style="all: unset; width: 100%; height: 100%; display: grid; place-items: center; cursor: pointer;">♡</button>
+              </form>
               <a href="{{ route('products.show', $similarProduct) }}" style="display: block; text-decoration: none;">
                 <div class="pCard__meta">
                   <div class="pCard__text">

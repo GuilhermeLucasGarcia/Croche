@@ -14,35 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/favorites.css') }}" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="container topbar__inner">
-        <a class="brand" href="{{ url('/') }}">
-          <span class="brand__name">Philos Croche</span>
-        </a>
-        <nav class="nav" aria-label="Categorias">
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Amigurumi']) }}">Amigurumi</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Maternidade']) }}">Maternidade</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Acessórios']) }}">Acessórios</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Decoração']) }}">Decoração</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
-        </nav>
-        <div class="actions">
-          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
-            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
-            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
-          </form>
-          <div class="iconbar" aria-label="Ações">
-            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
-              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
-            @endif
-            <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
-            <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
-          </div>
-        </div>
-      </div>
-      <div class="topbar__divider" role="presentation"></div>
-    </header>
+    @include('partials.topbar')
 
     <main class="container favoritesPage">
       <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -101,7 +73,11 @@
               $favImageUrl = $product->IMG_URL ?: (!empty($product->IMAGENS) && is_array($product->IMAGENS) ? $product->IMAGENS[0] : null);
             @endphp
             <article class="favoriteRow">
-              <button class="favoriteRow__remove" type="button" aria-label="Remover dos favoritos">×</button>
+              <form method="post" action="{{ route('favorites.destroy', $product) }}" style="display: contents;">
+                @csrf
+                @method('DELETE')
+                <button class="favoriteRow__remove" type="submit" aria-label="Remover dos favoritos">×</button>
+              </form>
 
               <a class="favoriteRow__thumb" href="{{ route('products.show', $product) }}">
                 @if ($favImageUrl)
@@ -120,7 +96,14 @@
 
               <div class="favoriteRow__price">R${{ number_format($favorite['product']->VALOR ?? 0, 2, ',', '.') }}</div>
 
-              <a class="favoriteRow__cta" href="{{ route('cart.index') }}">Adicionar ao carrinho</a>
+              <form method="post" action="{{ route('cart.items.store') }}">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}" />
+                <input type="hidden" name="quantity" value="1" />
+                <input type="hidden" name="color" value="{{ $favorite['color'] ?? 'natural' }}" />
+                <input type="hidden" name="size" value="unico" />
+                <button class="favoriteRow__cta" type="submit">Adicionar ao carrinho</button>
+              </form>
             </article>
           @empty
             <div class="favoritesEmpty">

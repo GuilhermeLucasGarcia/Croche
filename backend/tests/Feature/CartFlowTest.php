@@ -2,20 +2,19 @@
 
 namespace Tests\Feature;
 
-use App\Models\Carousel;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-class ExampleTest extends TestCase
+class CartFlowTest extends TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        Schema::dropIfExists('CARROSSEL');
+        Schema::dropIfExists('favorite_products');
         Schema::dropIfExists('PRODUTO');
         Schema::dropIfExists('CATEGORIA');
 
@@ -23,9 +22,9 @@ class ExampleTest extends TestCase
             $table->id();
             $table->timestamp('DT_CRIACAO')->nullable();
             $table->timestamp('DT_ALTERACAO')->nullable();
-            $table->string('IMG_URL')->nullable();
             $table->string('NOME')->nullable();
             $table->string('DESCRICAO')->nullable();
+            $table->string('IMG_URL')->nullable();
             $table->boolean('ATIVO')->default(true);
             $table->unsignedBigInteger('CATEGORIA_PAI_ID')->nullable();
         });
@@ -35,45 +34,35 @@ class ExampleTest extends TestCase
             $table->unsignedBigInteger('CATEGORIA_ID')->nullable();
             $table->string('CODIGO')->nullable();
             $table->text('DETALHES')->nullable();
-            $table->boolean('DESTAQUE')->default(false);
-            $table->string('IMG_URL')->nullable();
             $table->text('DESCRICAO')->nullable();
             $table->decimal('VALOR', 10, 2)->default(0);
             $table->integer('ESTOQUE')->default(0);
             $table->boolean('ATIVO')->default(true);
             $table->timestamp('DT_ALTERACAO')->nullable();
-            $table->json('IMAGENS')->nullable();
         });
-
-        Schema::create('CARROSSEL', function (Blueprint $table) {
-            $table->id();
-            $table->string('TITULO');
-            $table->string('DESCRICAO')->nullable();
-            $table->string('IMG_DESKTOP_URL');
-            $table->string('IMG_MOBILE_URL');
-            $table->string('LINK_DESTINO')->nullable();
-            $table->boolean('ATIVO')->default(true);
-            $table->integer('ORDEM')->default(0);
-            $table->timestamp('DT_CRIACAO')->nullable();
-            $table->timestamp('DT_ALTERACAO')->nullable();
-        });
-
-        $cat = Category::create(['NOME' => 'Amigurumi', 'ATIVO' => true]);
-        Product::create(['CODIGO' => 'Rena', 'CATEGORIA_ID' => $cat->id, 'VALOR' => 110.00, 'ATIVO' => true]);
-        Carousel::create([
-            'TITULO' => 'Slide',
-            'DESCRICAO' => 'Descrição',
-            'IMG_DESKTOP_URL' => 'https://example.com/desktop.png',
-            'IMG_MOBILE_URL' => 'https://example.com/mobile.png',
-            'ATIVO' => true,
-            'ORDEM' => 1,
-        ]);
     }
 
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_can_add_item_to_cart_and_render_cart_page(): void
     {
-        $response = $this->get('/');
+        $cat = Category::create(['NOME' => 'Amigurumi', 'ATIVO' => true]);
+        $product = Product::create([
+            'CATEGORIA_ID' => $cat->id,
+            'CODIGO' => 'Rena',
+            'VALOR' => 110.00,
+            'ESTOQUE' => 10,
+            'ATIVO' => true,
+        ]);
 
-        $response->assertStatus(200);
+        $this->post(route('cart.items.store'), [
+            'product_id' => $product->id,
+            'quantity' => 2,
+            'color' => 'azul marinho',
+            'size' => 'M',
+        ])->assertRedirect(route('cart.index'));
+
+        $this->get(route('cart.index'))
+            ->assertStatus(200)
+            ->assertSee('Rena')
+            ->assertSee('2');
     }
 }

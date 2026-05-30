@@ -13,33 +13,7 @@
     <link rel="stylesheet" href="{{ asset('css/home.css') }}" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="container topbar__inner">
-        <a class="brand" href="#">
-          <span class="brand__name">Philos Croche</span>
-        </a>
-        <nav class="nav" aria-label="Categorias">
-          @foreach($categories->take(5) as $category)
-            <a class="nav__link" href="{{ route('products.index', ['category' => $category->NOME]) }}">{{ $category->NOME }}</a>
-          @endforeach
-        </nav>
-        <div class="actions">
-          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
-            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
-            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
-          </form>
-          <div class="iconbar" aria-label="Ações">
-            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
-              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
-            @endif
-            <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
-            <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
-          </div>
-        </div>
-      </div>
-      <div class="topbar__divider" role="presentation"></div>
-    </header>
+    @include('partials.topbar')
 
     <main>
       <section class="hero" aria-label="Banner principal">
@@ -110,7 +84,11 @@
           <div class="carousel__track">
             @foreach($categories as $category)
             <a class="catCard" href="{{ route('products.index', ['category' => $category->NOME]) }}">
-              <div class="catCard__img" @if($category->IMG_URL) style="background-image: url('{{ $category->IMG_URL }}'); background-size: cover; background-position: center;" @endif aria-hidden="true"></div>
+              <div class="catCard__img" style="background: linear-gradient(135deg, #f5f5fa, #ececf6);" aria-hidden="true">
+                @if($category->IMG_URL)
+                  <img src="{{ $category->IMG_URL }}" alt="" loading="lazy" onerror="this.remove();" />
+                @endif
+              </div>
               <div class="catCard__label">{{ $category->NOME }}</div>
             </a>
             @endforeach
@@ -130,7 +108,11 @@
             $imageUrl = $product->IMG_URL ?: (!empty($product->IMAGENS) && is_array($product->IMAGENS) ? $product->IMAGENS[0] : null);
           @endphp
           <article class="productCard">
-            <button class="wishlist" type="button" aria-label="Favoritar" style="z-index: 2;">♡</button>
+            <form class="wishlist" method="post" action="{{ route('favorites.toggle') }}" style="z-index: 2;">
+              @csrf
+              <input type="hidden" name="product_id" value="{{ $product->id }}" />
+              <button type="submit" aria-label="Favoritar" style="all: unset; width: 100%; height: 100%; display: grid; place-items: center; cursor: pointer;">♡</button>
+            </form>
             <a href="{{ route('products.show', $product->id) }}" style="display: block; text-decoration: none;">
               <div class="productCard__img" @if($imageUrl) style="background-image: url('{{ $imageUrl }}'); background-size: cover; background-position: center;" @endif aria-hidden="true"></div>
             </a>
@@ -244,13 +226,7 @@
         showSlide(index);
       }
 
-      // Auto play
-      if (slides.length > 1) {
-        setInterval(() => {
-          changeSlide(1);
-        }, 5000);
-      }
+      showSlide(0);
     </script>
   </body>
 </html>
-

@@ -14,35 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/products.css') }}" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="container topbar__inner">
-        <a class="brand" href="{{ url('/') }}">
-          <span class="brand__name">Philos Croche</span>
-        </a>
-        <nav class="nav" aria-label="Categorias">
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Amigurumi']) }}">Amigurumi</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Maternidade']) }}">Maternidade</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Acessórios']) }}">Acessórios</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Decoração']) }}">Decoração</a>
-          <a class="nav__link" href="{{ route('products.index', ['category' => 'Outros']) }}">Outros</a>
-        </nav>
-        <div class="actions">
-          <form class="search" action="{{ route('products.index') }}" method="GET" aria-label="Buscar">
-            <button type="submit" class="search__icon" aria-label="Buscar" style="background: none; border: none; padding: 0; cursor: pointer;">⌕</button>
-            <input class="search__input" type="search" name="q" placeholder="O que você procura hoje?" value="{{ request('q') }}" />
-          </form>
-          <div class="iconbar" aria-label="Ações">
-            @if(auth()->check() && auth()->user()->PERFIL === 'admin')
-              <a class="iconbtn" href="{{ url('/admin/produtos') }}" aria-label="Painel Admin" title="Painel Admin" style="color: #6b2cf5;">⚙</a>
-            @endif
-            <a class="iconbtn" href="{{ route('favorites.index') }}" aria-label="Favoritos">♡</a>
-            <a class="iconbtn" href="{{ route('account.index') }}" aria-label="Conta">👤</a>
-            <a class="iconbtn" href="{{ route('cart.index') }}" aria-label="Carrinho">🛒</a>
-          </div>
-        </div>
-      </div>
-      <div class="topbar__divider" role="presentation"></div>
-    </header>
+    @include('partials.topbar')
 
     <main class="container catalog">
       <div class="catalog__grid">
@@ -77,7 +49,11 @@
                     <div class="pCard__img" style="background: linear-gradient(135deg, #f5f5fa, #ececf6)"></div>
                   @endif
                 </a>
-                <a class="pCard__wish" href="{{ route('favorites.index') }}" aria-label="Favoritar">♡</a>
+                <form class="pCard__wish" method="post" action="{{ route('favorites.toggle') }}">
+                  @csrf
+                  <input type="hidden" name="product_id" value="{{ $product->id }}" />
+                  <button type="submit" aria-label="Favoritar" style="all: unset; width: 100%; height: 100%; display: grid; place-items: center; cursor: pointer;">♡</button>
+                </form>
                 <a href="{{ route('products.show', $product) }}" style="display: block; text-decoration: none;">
                   <div class="pCard__meta">
                     <div class="pCard__text">

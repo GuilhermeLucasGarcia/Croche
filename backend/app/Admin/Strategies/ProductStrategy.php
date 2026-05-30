@@ -206,9 +206,11 @@ class ProductStrategy extends AbstractAdminFormStrategy
                         
                         $response = \Illuminate\Support\Facades\Http::withoutVerifying()->withHeaders([
                             'Authorization' => "Bearer {$supabaseKey}",
+                            'apikey' => $supabaseKey,
                             'Content-Type' => $file->getMimeType(),
+                            'x-upsert' => 'true',
                         ])->withBody(file_get_contents($file->getRealPath()), $file->getMimeType())
-                        ->post($url);
+                        ->put($url);
                         
                         \Illuminate\Support\Facades\Log::info('Supabase upload response', ['status' => $response->status(), 'body' => $response->body()]);
 
@@ -230,4 +232,3 @@ class ProductStrategy extends AbstractAdminFormStrategy
         $data['IMAGENS'] = array_values(array_filter($imagens));
     }
 }
-

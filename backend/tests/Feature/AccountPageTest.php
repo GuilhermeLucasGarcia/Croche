@@ -56,7 +56,7 @@ class AccountPageTest extends TestCase
     {
         $response = $this->get('/minha-conta');
 
-        $response->assertRedirect('/');
+        $response->assertRedirect('/login');
     }
 
     public function test_authenticated_user_can_see_account_page(): void

@@ -177,7 +177,7 @@ class CategoryStrategy extends AbstractAdminFormStrategy
             if ($file && $file->isValid()) {
                 $filename = uniqid() . '-' . time() . '.' . $file->getClientOriginalExtension();
                 
-                $supabaseUrl = env('SUPABASE_URL');
+                $supabaseUrl = env('SUPABASE_URL', 'https://qcpdmmnalmbzlgqccmih.supabase.co');
                 $supabaseKey = env('SUPABASE_SERVICE_ROLE_KEY');
                 
                 if ($supabaseUrl && $supabaseKey) {
@@ -186,9 +186,11 @@ class CategoryStrategy extends AbstractAdminFormStrategy
                     
                     $response = \Illuminate\Support\Facades\Http::withoutVerifying()->withHeaders([
                         'Authorization' => "Bearer {$supabaseKey}",
+                        'apikey' => $supabaseKey,
                         'Content-Type' => $file->getMimeType(),
+                        'x-upsert' => 'true',
                     ])->withBody(file_get_contents($file->getRealPath()), $file->getMimeType())
-                    ->post($url);
+                    ->put($url);
                     
                     if ($response->successful()) {
                         $publicUrl = "{$supabaseUrl}/storage/v1/object/public/{$bucket}/{$filename}";
